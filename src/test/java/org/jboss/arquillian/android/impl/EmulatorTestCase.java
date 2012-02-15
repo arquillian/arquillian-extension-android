@@ -47,9 +47,9 @@ import com.android.ddmlib.IDevice;
 
 /**
  * Tests Destroyer activation when no context was created (no @Drone) won't fail
- * 
+ *
  * @author <a href="kpiwko@redhat.com">Karel Piwko</a>
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class EmulatorTestCase extends AbstractTestTestBase {
@@ -70,8 +70,8 @@ public class EmulatorTestCase extends AbstractTestTestBase {
     public void setMocks() {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidSdkConfigurator.ANDROID_SDK_EXTENSION_NAME).property("force", "false")
-                .property("verbose", "true").property("avdName", "foobar-test-device")                
-                .property("emulatorStartupTimeout", "180000");
+                .property("verbose", "true").property("avdName", "foobar-test-device").property("apiLevel", "9")
+                .property("emulatorBootupTimeoutInSeconds", "180");
 
         bind(ApplicationScoped.class, ServiceLoader.class, serviceLoader);
         bind(ApplicationScoped.class, ArquillianDescriptor.class, desc);

@@ -46,9 +46,9 @@ import com.android.ddmlib.IDevice;
 
 /**
  * Tests Destroyer activation when no context was created (no @Drone) won't fail
- * 
+ *
  * @author <a href="kpiwko@redhat.com">Karel Piwko</a>
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 @Ignore("This test requires a physical device")
@@ -71,7 +71,7 @@ public class AndroidWebDriverSupportRealDeviceTestCase extends AbstractTestTestB
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidSdkConfigurator.ANDROID_SDK_EXTENSION_NAME).property("force", "false")
                 .property("verbose", "true").property("avdName", "foobar-test-device").property("serialId", "0A3B89060A01600D")
-                .property("emulatorStartupTimeout", "5000").property("androidServerApk", "android-server-2.6.0.apk");
+                .property("emulatorBootupTimeoutInSeconds", "5").property("androidServerApk", "android-server-2.6.0.apk");
 
         bind(ApplicationScoped.class, ServiceLoader.class, serviceLoader);
         bind(ApplicationScoped.class, ArquillianDescriptor.class, desc);

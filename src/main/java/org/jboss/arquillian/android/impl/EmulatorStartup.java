@@ -1,6 +1,7 @@
 package org.jboss.arquillian.android.impl;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.android.configuration.AndroidSdk;
@@ -62,7 +63,7 @@ public class EmulatorStartup {
             Process emulator = executor.spawn(sdk.getEmulatorPath(), "-avd", name, configuration.getEmulatorOptions());
             androidEmulator.set(new AndroidEmulator(emulator));
 
-            waitUntilConnected(deviceDiscovery, configuration.getEmulatorStartupTimeout());
+            waitUntilBootUpIsComplete(deviceDiscovery, executor, sdk, configuration.getEmulatorBootupTimeoutInSeconds());
             running = deviceDiscovery.getDiscoveredDevice();
 
             AndroidDebugBridge.removeDeviceChangeListener(deviceDiscovery);
@@ -80,36 +81,52 @@ public class EmulatorStartup {
         // publish device and fire event
         iDevice.set(running);
         androidDeviceReady.fire(new AndroidDeviceReady(running));
-
     }
 
-    /**
-     * Run a wait loop until adb is connected or trials run out. This method seems to work more reliably then using a listener.
-     * 
-     * @param adb
-     */
-    private void waitUntilConnected(DeviceDiscovery deviceDiscovery, long timeout) {
 
-        boolean deviceIsOnline = false;
-        long timeoutLimit = timeout;
-        while (timeoutLimit > 0) {            
+    private void waitUntilBootUpIsComplete(DeviceDiscovery deviceDiscovery, ProcessExecutor executor, AndroidSdk sdk, long timeout) throws IOException {
+        log.info("waiting until device is connected");
+        long timeLeft = timeout * 1000;
+        // wait until the device is connected to ADB
+        while(true) {
+            long started = System.currentTimeMillis();
             if (deviceDiscovery.isOnline()) {
-                deviceIsOnline = true;
                 break;
             }
             try {
                 Thread.sleep(1000);
-                timeoutLimit -= 1000;
+            } catch(InterruptedException e) {
+                e.printStackTrace();
+            }
+            timeLeft -= System.currentTimeMillis() - started;
+            if (timeLeft <= 0) {
+                throw new IllegalStateException("No emulator device was brough online during " + timeout
+                    + " seconds to Android Debug Bridge. Please increase the time limit in order to get emulator connected.");
+            }
+        }
+        // device is connected to ADB
+        IDevice connectedDevice = deviceDiscovery.getDiscoveredDevice();
+        // wait until the device is started completely
+        log.info("waiting until boot is complete");
+        while (true) {
+            long started = System.currentTimeMillis();
+            List<String> props = executor.execute(sdk.getAdbPath(), "-s", connectedDevice.getSerialNumber(), "shell", "getprop");
+            for (String line : props) {
+                if (line.contains("[ro.runtime.firstboot]")) {
+                    // boot is completed
+                    return;
+                }
+            }
+            try {
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            timeLeft -= System.currentTimeMillis() - started;
+            if (timeLeft <= 0) {
+                throw new IllegalStateException("Emulator device hasn't started properly in " + timeout + " seconds. Please increas the time limit in orded to get emulator booted");
+            }
         }
-
-        if (!deviceIsOnline) {
-            throw new IllegalStateException("No emulator device was brough online during " + timeout
-                    + "ms to Android Debug Bridge. Please increase the time limit in order to get emulator connected.");
-        }
-
     }
 
     private boolean equalsIgnoreNulls(String current, String other) {

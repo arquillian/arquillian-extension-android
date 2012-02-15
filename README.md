@@ -72,7 +72,7 @@ where you extracted it. You should also update it via running `android` and navi
     - verbose - (false) be verbose
     - force - (false) force emulator recreationg
     - sdSize - (128M) SD card size for emulator 
-    - emulatorStartupTimeout - (50000L) maximal time to get emulator started, use Snapshot enabled device if it takes too long
+    - emulatorBootupTime - (120000L) maximal time to get emulator started, use Snapshot enabled device if it takes too long
     - emulatorOptions - emulator options
     - webdriverPortHost - (14444) port on Host connected with port on device
     - webdriverPortGuest - (8080) port on Guest connected with port on Host

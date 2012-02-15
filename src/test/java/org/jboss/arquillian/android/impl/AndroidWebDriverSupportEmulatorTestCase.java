@@ -47,9 +47,9 @@ import com.android.ddmlib.IDevice;
 
 /**
  * Tests Destroyer activation when no context was created (no @Drone) won't fail
- * 
+ *
  * @author <a href="kpiwko@redhat.com">Karel Piwko</a>
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AndroidWebDriverSupportEmulatorTestCase extends AbstractTestTestBase {
@@ -72,7 +72,7 @@ public class AndroidWebDriverSupportEmulatorTestCase extends AbstractTestTestBas
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidSdkConfigurator.ANDROID_SDK_EXTENSION_NAME).property("force", "false")
                 .property("verbose", "true").property("avdName", "webdriver-emulator").property("apiLevel", "9")
-                .property("emulatorStartupTimeout", "120000").property("androidServerApk", "android-server-2.6.0.apk")
+                .property("emulatorBootupTimeoutInSeconds", "120").property("androidServerApk", "android-server-2.6.0.apk")
                 .property("sdSize", "256M");
 
         bind(ApplicationScoped.class, ServiceLoader.class, serviceLoader);
@@ -106,7 +106,7 @@ public class AndroidWebDriverSupportEmulatorTestCase extends AbstractTestTestBas
         }
 
         Thread.sleep(10000);
-        
+
         fire(new BeforeClass(DummyClass.class));
         fire(new Before(instance, testMethod));
 

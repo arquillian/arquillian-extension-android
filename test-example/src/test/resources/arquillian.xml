@@ -45,7 +45,7 @@
         <property name="androidServerApk">android-server-2.16.apk</property>
         <property name="apiLevel">13</property>
         <property name="avdName">SnapshotEnabled</property>
-        <property name="emulatorStartupTimeout">180000</property>
+        <property name="emulatorBootupTime">180000</property>
 
     </extension>
 
