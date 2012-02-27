@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jboss.org/schema/arquillian
+    http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <!-- Uncomment to have test archives exported to the file system for inspection -->
+    <!-- <engine> -->
+    <!-- <property name="deploymentExportPath">target/</property> -->
+    <!-- </engine> -->
+
+    <extension qualifier="selenium-server">
+        <!-- this must be skipped, we run /wd/hub on emulator -->
+        <property name="skip">true</property>
+    </extension>
+
+    <extension qualifier="webdriver">
+        <property name="implementationClass">org.openqa.selenium.android.AndroidDriver</property>
+        <property name="remoteAddress">http://localhost:14444/wd/hub</property>
+    </extension>
+
+    <extension qualifier="android">
+        <!-- DEFY+ --><!--
+            <property name="serialId">0A3B89060A01600D</property>
+        -->
+        <!-- Nexus S -->
+        <!-- <property name="serialId">3233E8EDB21700EC</property> -->
+        <!-- Xoom -->
+        <property name="serialId">161c110144002197</property>
+
+
+        <property name="verbose">true</property>
+
+        <property name="apiLevel">13</property>
+        <property name="avdName">SnapshotEnabled</property>
+        <property name="emulatorBootupTimeoutInSeconds">180</property>
+
+    </extension>
+
+    <extension qualifier="android-drone">
+        <property name="verbose">true</property>
+        <property name="androidServerApk">android-server-2.16.apk</property>
+    </extension>
+
+</arquillian>

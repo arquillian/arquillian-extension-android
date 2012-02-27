@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <!-- Parent -->
+    <parent>
+        <groupId>org.jboss.arquillian.extension</groupId>
+        <artifactId>arquillian-android-build</artifactId>
+        <version>1.0.0.Alpha1-SNAPSHOT</version>
+        <relativePath>../android-build/pom.xml</relativePath>
+    </parent>
+
+    <!-- Model Version -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Artifact Configuration -->
+    <artifactId>arquillian-android-configuration</artifactId>
+    <name>Arquillian Android Extension Configuration</name>
+
+    <developers>
+        <developer>
+            <name>Karel Piwko</name>
+            <email>kpiwko@redhat.com</email>
+        </developer>
+    </developers>
+
+    <!-- Dependencies -->
+    <dependencies>
+        <!-- Arquillian dependencies -->
+        <dependency>
+            <groupId>org.jboss.arquillian.core</groupId>
+            <artifactId>arquillian-core-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.test</groupId>
+            <artifactId>arquillian-test-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.config</groupId>
+            <artifactId>arquillian-config-api</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

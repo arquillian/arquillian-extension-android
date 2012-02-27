@@ -15,9 +15,10 @@
 
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.extension</groupId>
-    <artifactId>arquillian-android</artifactId>
+    <artifactId>arquillian-android-parent</artifactId>
     <version>1.0.0.Alpha1-SNAPSHOT</version>
-    <name>Arquillian Android Extension</name>
+    <packaging>pom</packaging>
+    <name>Arquillian Android Extension Parent</name>
 
     <developers>
         <developer>
@@ -26,111 +27,16 @@
         </developer>
     </developers>
 
-    <properties>
-        <version.arquillian.core>1.0.0.CR7</version.arquillian.core>
-        <version.com.android>r16</version.com.android>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Arquillian -->
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>${version.arquillian.core}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-build</artifactId>
-                <version>${version.arquillian.core}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.test</groupId>
-                <artifactId>arquillian-test-impl-base</artifactId>
-                <scope>test</scope>
-                <version>${version.arquillian.core}</version>
-                <classifier>tests</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.core</groupId>
-                <artifactId>arquillian-core-impl-base</artifactId>
-                <scope>test</scope>
-                <version>${version.arquillian.core}</version>
-                <classifier>tests</classifier>
-            </dependency>
-
-            <!-- Android -->
-            <dependency>
-                <groupId>com.android.ddmlib</groupId>
-                <artifactId>ddmlib</artifactId>
-                <version>${version.com.android}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- Dependencies -->
-    <dependencies>
-        <!-- Arquillian dependencies -->
-        <dependency>
-            <groupId>org.jboss.arquillian.core</groupId>
-            <artifactId>arquillian-core-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.test</groupId>
-            <artifactId>arquillian-test-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.config</groupId>
-            <artifactId>arquillian-config-api</artifactId>
-        </dependency>
-
-        <!-- Android Dependencies -->
-        <dependency>
-            <groupId>com.android.ddmlib</groupId>
-            <artifactId>ddmlib</artifactId>
-        </dependency>
-
-        <!-- test dependencies -->
-        <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-standalone</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.config</groupId>
-            <artifactId>arquillian-config-impl-base</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.test</groupId>
-            <artifactId>arquillian-test-impl-base</artifactId>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.core</groupId>
-            <artifactId>arquillian-core-impl-base</artifactId>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-
-        <!-- external dependencies -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>android-bom</module>
+        <module>android-build</module>
+        <module>android-api</module>
+        <module>android-configuration</module>
+        <module>android-impl</module>
+        <module>android-spi</module>
+        <module>android-drone</module>
+        <module>android-depchain</module>
+        <module>android-tests</module>
+    </modules>
 
 </project>

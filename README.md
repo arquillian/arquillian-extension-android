@@ -20,8 +20,9 @@ where you extracted it. You should also update it via running `android` and navi
 
         <dependency>
             <groupId>org.jboss.arquillian.extension</groupId>
-            <artifactId>arquillian-android</artifactId>
+            <artifactId>arquillian-android-depchain</artifactId>
             <version>1.0.0.Alpha1-SNAPSHOT</version>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
 
@@ -39,43 +40,57 @@ where you extracted it. You should also update it via running `android` and navi
 3. Set up WebDriver in arquillian.xml
 
         <extension qualifier="webdriver">
-            <!-- this is optional if you set u
+            <!-- this is optional if you set -->
             <property name="implementationClass">org.openqa.selenium.android.AndroidDriver</property>
+            <!-- this makes WebDriver connect hub on Android device -->
             <property name="remoteAddress">http://localhost:14444/wd/hub</property>
         </extension>
 
-4. Set up AndroidSdk in arquillian.xml
+4. Set up Android in arquillian.xml
 
     You should be aware that following might change in the future. You've been warned! 
 
-        <extension qualifier="android-sdk">
+        <extension qualifier="android">
+            <!-- this is optional, can be set via ANDROID_HOME property -->
             <property name="home">/home/kpiwko/apps/android-sdk-linux_x86</property>
             <!-- Nexus S -->
             <!-- <property name="serialId">3233E8EDB21700EC</property>-->
 
             <property name="verbose">true</property>
-            <property name="androidServerApk">android-server-2.16.apk</property>
             <property name="apiLevel">13</property>
             <property name="avdName">SnapshotEnabled</property>
-            <property name="emulatorStartupTimeout">180000</property>
-
+            <property name="emulatorBootupTimeoutInSeconds">180</property>
         </extension>
     
-    Properties explained, required in bold:
+    Properties explained, required in **bold**:
 
     - **home** - ANDROID_HOME, can be ommited if set via ANDROID_HOME property
     - **avdName** - name of the Android Virtual Device. It will be either created or reused
-    - **androidServerApk** - path to the Android Server APK you've downloaded
     - apiLevel - (13) denotates API level, use `android list target` to get more variants
-    - serialId - replaces avdName if set, represents a real device. Use `adb devics` to get the list
+    - serialId - replaces avdName if set and availabel, represents a real device. Use `adb devics` to get the list
     - skip - (false) skip execution
     - verbose - (false) be verbose
     - force - (false) force emulator recreationg
     - sdSize - (128M) SD card size for emulator 
-    - emulatorBootupTime - (120000L) maximal time to get emulator started, use Snapshot enabled device if it takes too long
+    - emulatorBootupTimeoutInSeconds - (180) maximal time to get emulator started, use Snapshot enabled device if it takes too long
     - emulatorOptions - emulator options
+
+    Emulators are created by default in `${basedir}/${avdName}`.
+
+5. Set up Android Drone in arquillian.xml
+
+    You should be aware that following might change in the future. You've been warned! 
+    
+        <extension qualifier="android-drone">
+            <property name="androidServerApk">android-server-2.16.apk</property>
+        </extension> 
+
+    Properties explained, required in **bold**:
+
+    - **androidServerApk** - path to the Android Server APK you've downloaded
+    - skip - (false) skip execution
+    - verbose - (false) be verbose
     - webdriverPortHost - (14444) port on Host connected with port on device
     - webdriverPortGuest - (8080) port on Guest connected with port on Host
 
-    Emulators are created by default in target/${avdName}. This might cause problem while running `mvn clean`
 
