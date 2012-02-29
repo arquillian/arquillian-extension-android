@@ -91,13 +91,18 @@ public class AndroidExtensionConfigurator {
 
         if (configured && configuration.isSkip() != true) {
 
-            // validate configuration
-            if (configuration.getAvdName() == null && configuration.getSerialId() == null) {
-                throw new AndroidConfigurationException(
-                        "You must provide either \"avdName\" if you want to use an emulator, or \"serialId\" property if you want to use a real device.");
-            }
+            Validate.isReadableDirectory(
+                    configuration.getHome(),
+                    "You must provide Android SDK Home. The value you've provided is not valid ("
+                            + (configuration.getHome() == null ? "" : configuration.getHome())
+                            + "). You can either set it via an environment variable ANDROID_HOME or via a property called \"home\" in Arquillian configuration.");
+
+            Validate.notAllNullsOrEmpty(
+                    new String[] { configuration.getAvdName(), configuration.getSerialId() },
+                    "You must provide either \"avdName\" if you want to use an emulator, or \"serialId\" property if you want to use a real device.");
+
             if (configuration.getAvdName() != null && configuration.getSerialId() != null) {
-                log.warning("Both \"avdName\" and \"serialId\" properties are defined, the device specified by \"serialId\" will get priority");
+                log.warning("Both \"avdName\" and \"serialId\" properties are defined, the device specified by \"serialId\" will get priority if connected.");
             }
 
             AndroidSdk sdk = new AndroidSdk(configuration);

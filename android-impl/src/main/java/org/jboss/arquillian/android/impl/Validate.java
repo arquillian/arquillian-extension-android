@@ -18,6 +18,8 @@ package org.jboss.arquillian.android.impl;
 
 import java.io.File;
 
+import org.jboss.arquillian.android.configuration.AndroidConfigurationException;
+
 /**
  * Simple validation utility
  *
@@ -39,9 +41,9 @@ class Validate {
      * @param message The exception message
      * @throws IllegalArgumentException Thrown if obj is null
      */
-    public static void notNull(final Object obj, final String message) throws IllegalArgumentException {
+    public static void notNull(final Object obj, final String message) throws AndroidConfigurationException {
         if (obj == null) {
-            throw new IllegalArgumentException(message);
+            throw new AndroidConfigurationException(message);
         }
     }
 
@@ -50,12 +52,29 @@ class Validate {
      *
      * @param string The object to check
      * @param message The exception message
-     * @throws IllegalArgumentException Thrown if string is null
+     * @throws AndroidConfigurationException Thrown if string is null
      */
-    public static void notNullOrEmpty(final String string, final String message) throws IllegalArgumentException {
+    public static void notNullOrEmpty(final String string, final String message) throws AndroidConfigurationException {
         if (string == null || string.length() == 0) {
-            throw new IllegalArgumentException(message);
+            throw new AndroidConfigurationException(message);
         }
+    }
+
+    /**
+     * Checks that at least one of specified String is not empty
+     *
+     * @param strings The array of strings to be checked
+     * @param message The exception message
+     * @throws AndroidConfigurationException Throws if all strings are null or empty
+     */
+    public static void notAllNullsOrEmpty(final String[] strings, final String message) throws AndroidConfigurationException {
+        for (String string : strings) {
+            if (string != null && string.trim().length() != 0) {
+                return;
+            }
+        }
+
+        throw new AndroidConfigurationException(message);
     }
 
     /**
@@ -64,9 +83,9 @@ class Validate {
      *
      * @param path The path to check
      * @param message The exception message
-     * @throws IllegalArgumentException Thrown if path is empty, null or invalid
+     * @throws AndroidConfigurationException Thrown if path is empty, null or invalid
      */
-    public static void isReadable(final String path, String message) throws IllegalArgumentException {
+    public static void isReadable(final String path, String message) throws AndroidConfigurationException {
         notNullOrEmpty(path, message);
         File file = new File(path);
         isReadable(file, message);
@@ -98,7 +117,7 @@ class Validate {
      * @param message The exception message
      * @throws IllegalArgumentException Thrown if path is empty, null or invalid
      */
-    public static void isReadableDirectory(final String path, String message) throws IllegalArgumentException {
+    public static void isReadableDirectory(final String path, String message) throws AndroidConfigurationException {
         notNullOrEmpty(path, message);
         File file = new File(path);
         isReadableDirectory(file, message);
@@ -110,15 +129,15 @@ class Validate {
      *
      * @param file The path to check
      * @param message The exception message
-     * @throws IllegalArgumentException Thrown if file is null or invalid
+     * @throws AndroidConfigurationException Thrown if file is null or invalid
      */
-    public static void isReadableDirectory(final File file, String message) throws IllegalArgumentException {
+    public static void isReadableDirectory(final File file, String message) throws AndroidConfigurationException {
         if (file == null) {
-            throw new IllegalArgumentException(message);
+            throw new AndroidConfigurationException(message);
         }
         if (!file.exists() || !file.isDirectory() || !file.canRead() || !file.canExecute()) {
-            throw new IllegalArgumentException(message);
+            throw new AndroidConfigurationException(message);
         }
-
     }
+
 }

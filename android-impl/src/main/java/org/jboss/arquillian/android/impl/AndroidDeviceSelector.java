@@ -156,7 +156,10 @@ public class AndroidDeviceSelector {
             Matcher m;
             if (line.trim().startsWith("Name: ") && (m = deviceName.matcher(line)).matches()) {
                 String name = m.group(1);
-                Validate.notNull(name, "Invalid name of available Android devices, must not be null");
+                // skip a device which has no name
+                if (name == null || name.trim().length() == 0) {
+                    continue;
+                }
                 names.add(name);
                 if (log.isLoggable(Level.FINE)) {
                     log.fine("Available Android Device: " + name);
