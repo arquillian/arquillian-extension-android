@@ -82,12 +82,12 @@
                 tools for your
                 project, such as Arquillian for testing) -->
             <!-- ARQ-792 -->
-            <!--     
-            <dependency>
+            <!--
+                <dependency>
                 <groupId>org.jboss.arquillian.core</groupId>
                 <artifactId>arquillian-core-impl-base</artifactId>
                 <version>1.0.0.Final-SNAPSHOT</version>
-            </dependency>
+                </dependency>
             -->
             <dependency>
                 <groupId>org.jboss.bom</groupId>
@@ -124,7 +124,7 @@
             <artifactId>arquillian-drone-webdriver</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- ARQ-793 FIXME this should not be required!!! -->
         <dependency>
             <groupId>org.jboss.arquillian.config</groupId>
@@ -154,5 +154,31 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- This profile executes tests, however it needs a DISPLAY, therefore it is not enabled by default -->
+        <profile>
+            <id>functional-tests</id>
+        </profile>
+    </profiles>
 
 </project> 

@@ -17,7 +17,10 @@
 package org.jboss.arquillian.android.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.android.api.AndroidBridge;
@@ -99,7 +102,11 @@ public class EmulatorStartup {
             DeviceDiscovery deviceDiscovery = new DeviceDiscovery();
             AndroidDebugBridge.addDeviceChangeListener(deviceDiscovery);
 
-            Process emulator = executor.spawn(sdk.getEmulatorPath(), "-avd", name, configuration.getEmulatorOptions());
+            // construct emulator command
+            List<String> emulatorCommand = new ArrayList<String>(Arrays.asList(sdk.getEmulatorPath(), "-avd", name));
+            emulatorCommand = getEmulatorOptions(emulatorCommand, configuration.getEmulatorOptions());
+            // execute emulator
+            Process emulator = executor.spawn(emulatorCommand.toArray(new String[0]));
             androidEmulator.set(new AndroidEmulator(emulator));
 
             waitUntilBootUpIsComplete(deviceDiscovery, executor, sdk, configuration.getEmulatorBootupTimeoutInSeconds());
@@ -171,6 +178,21 @@ public class EmulatorStartup {
                         + " seconds. Please increase the time limit in order to get emulator booted.");
             }
         }
+    }
+
+    private List<String> getEmulatorOptions(List<String> properties, String valueString) {
+        if (valueString == null) {
+            return properties;
+        }
+
+        // FIXME this should accept properties encapsulated in quotes as well
+        StringTokenizer tokenizer = new StringTokenizer(valueString, " ");
+        while (tokenizer.hasMoreTokens()) {
+            String property = tokenizer.nextToken().trim();
+            properties.add(property);
+        }
+
+        return properties;
     }
 
     private boolean equalsIgnoreNulls(String current, String other) {

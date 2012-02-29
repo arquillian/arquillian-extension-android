@@ -37,7 +37,6 @@ import org.jboss.arquillian.test.spi.event.suite.BeforeSuite;
 import org.jboss.arquillian.test.test.AbstractTestTestBase;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -68,7 +67,8 @@ public class RealDeviceStarterTestCase extends AbstractTestTestBase {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidExtensionConfigurator.ANDROID_EXTENSION_NAME).property("force", "false")
                 .property("verbose", "false").property("avdName", "foobar-test-device")
-                .property("serialId", "0A3B89060A01600D");
+                .property("serialId", "0A3B89060A01600D")
+                .property("emulatorOptions", "-no-window");
 
         bind(ApplicationScoped.class, ServiceLoader.class, serviceLoader);
         bind(ApplicationScoped.class, ArquillianDescriptor.class, desc);
