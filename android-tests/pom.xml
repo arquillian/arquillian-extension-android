@@ -157,12 +157,7 @@
 
     <profiles>
         <profile>
-            <id>default</id>
-
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-
+            <id>build-server</id>
             <build>
                 <plugins>
                     <plugin>
@@ -173,11 +168,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <!-- This profile executes tests, however it needs a DISPLAY, therefore it is not enabled by default -->
-        <profile>
-            <id>functional-tests</id>
         </profile>
     </profiles>
 
