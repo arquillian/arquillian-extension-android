@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <!-- Model Version -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Artifact Configuration -->
+    <groupId>org.jboss.arquillian.extension</groupId>
+    <artifactId>arquillian-android-bom</artifactId>
+    <version>1.0.0.Alpha1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Arquillian Android Extension Bill of Materials</name>
+
+    <developers>
+        <developer>
+            <name>Karel Piwko</name>
+            <email>kpiwko@redhat.com</email>
+        </developer>
+    </developers>
+
+    <properties>
+        <version.arquillian.core>1.0.0.CR7</version.arquillian.core>
+        <version.com.android>r16</version.com.android>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Arquillian -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.arquillian.core}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-build</artifactId>
+                <version>${version.arquillian.core}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.test</groupId>
+                <artifactId>arquillian-test-impl-base</artifactId>
+                <scope>test</scope>
+                <version>${version.arquillian.core}</version>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-impl-base</artifactId>
+                <scope>test</scope>
+                <version>${version.arquillian.core}</version>
+                <classifier>tests</classifier>
+            </dependency>
+
+            <!-- Android -->
+            <dependency>
+                <groupId>com.android.ddmlib</groupId>
+                <artifactId>ddmlib</artifactId>
+                <version>${version.com.android}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>
