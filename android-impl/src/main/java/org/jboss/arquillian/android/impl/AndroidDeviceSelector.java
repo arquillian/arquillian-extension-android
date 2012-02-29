@@ -127,7 +127,7 @@ public class AndroidDeviceSelector {
 
     private AndroidDevice checkIfRealDeviceIsConnected(AndroidBridge bridge, String serialId) {
         // no serialId was specified
-        if (serialId == null || serialId.length() > 0) {
+        if (serialId == null || serialId.trim().isEmpty()) {
             return null;
         }
 
