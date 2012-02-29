@@ -11,6 +11,23 @@
     <version>1.0.0.Alpha1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Arquillian Android Extension Bill of Materials</name>
+    <description>Centralized dependencyManagement for the Arquillian Android Extension</description>
+    <url>http://www.jboss.org/arquillian</url>
+
+    <!-- Licenses -->
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <!-- SCM -->
+    <scm>
+        <connection>scm:git:git://git@github.com:arquillian/arquillian-extension-android.git</connection>
+        <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-extension-android.git</developerConnection>
+        <url>git://github.com/arquillian/arquillian-extension-android.git</url>
+    </scm>
 
     <developers>
         <developer>
@@ -22,6 +39,8 @@
     <properties>
         <version.arquillian.core>1.0.0.CR7</version.arquillian.core>
         <version.com.android>r16</version.com.android>
+        <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
+        <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
     </properties>
 
     <dependencyManagement>
@@ -65,5 +84,33 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.1</version>
+                    <configuration>
+                        <pushChanges>false</pushChanges>
+                        <localCheckout>true</localCheckout> 
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+  
+    <distributionManagement>
+        <repository>
+            <id>jboss-releases-repository</id>
+            <name>JBoss Releases Repository</name>
+            <url>${jboss.releases.repo.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshots Repository</name>
+            <url>${jboss.snapshots.repo.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>

@@ -27,6 +27,34 @@
         </developer>
     </developers>
 
+    <scm>
+        <connection>scm:git:git://git@github.com:arquillian/arquillian-extension-android.git</connection>
+        <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-extension-android.git</developerConnection>
+        <url>git://github.com/arquillian/arquillian-extension-android.git</url>
+    </scm>
+
+    <!-- Properties -->
+    <properties>
+
+        <!-- override from parent -->
+        <maven.compiler.argument.target>1.5</maven.compiler.argument.target>
+        <maven.compiler.argument.source>1.5</maven.compiler.argument.source>
+
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <pushChanges>false</pushChanges>
+                    <localCheckout>true</localCheckout>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <modules>
         <module>android-bom</module>
         <module>android-build</module>
