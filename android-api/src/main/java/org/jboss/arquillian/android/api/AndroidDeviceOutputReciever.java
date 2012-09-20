@@ -38,6 +38,4 @@ public interface AndroidDeviceOutputReciever {
      */
     boolean isCancelled();
 
-    boolean isVerbose();
-
 }

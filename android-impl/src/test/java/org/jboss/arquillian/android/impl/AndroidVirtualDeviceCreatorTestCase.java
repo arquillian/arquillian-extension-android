@@ -65,7 +65,7 @@ public class AndroidVirtualDeviceCreatorTestCase extends AbstractTestTestBase {
     public void setMocks() {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidExtensionConfigurator.ANDROID_EXTENSION_NAME).property("force", "true")
-                .property("apiLevel", "10").property("verbose", "true").property("avdName", "foobar-test-device");
+                .property("apiLevel", "10").property("avdName", "foobar-test-device");
 
         bind(ApplicationScoped.class, ServiceLoader.class, serviceLoader);
         bind(ApplicationScoped.class, ArquillianDescriptor.class, desc);

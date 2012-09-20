@@ -34,23 +34,7 @@ public class AndroidDroneConfiguration {
 
     private int webdriverPortGuest = 8080;
 
-    private boolean verbose = false;
-
     private boolean skip = false;
-
-    /**
-     * @return the verbose
-     */
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    /**
-     * @param verbose the verbose to set
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
 
     /**
      * @return the androidServerApk

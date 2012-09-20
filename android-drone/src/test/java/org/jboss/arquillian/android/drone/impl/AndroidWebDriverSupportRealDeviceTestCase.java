@@ -65,9 +65,9 @@ public class AndroidWebDriverSupportRealDeviceTestCase extends AbstractTestTestB
     @org.junit.Before
     public void setMocks() {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class).extension("android")
-                .property("force", "false").property("verbose", "true").property("avdName", "foobar-test-device")
+                .property("force", "false").property("avdName", "foobar-test-device")
                 .property("serialId", "0A3B89060A01600D").property("emulatorBootupTimeoutInSeconds", "5")
-                .extension(AndroidDroneConfigurator.ANDROID_DRONE_EXTENSION_NAME).property("verbose", "true")
+                .extension(AndroidDroneConfigurator.ANDROID_DRONE_EXTENSION_NAME)
                 .property("androidServerApk", "android-server-2.6.0.apk");
 
         bind(ApplicationScoped.class, ServiceLoader.class, serviceLoader);

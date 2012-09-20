@@ -24,6 +24,7 @@ import org.jboss.arquillian.android.api.AndroidBridge;
 import org.jboss.arquillian.android.api.AndroidExecutionException;
 import org.jboss.arquillian.android.spi.event.AndroidBridgeInitialized;
 import org.jboss.arquillian.android.spi.event.AndroidDeviceReady;
+import org.jboss.arquillian.android.spi.event.AndroidDeviceShutdown;
 import org.jboss.arquillian.config.descriptor.api.ArquillianDescriptor;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.spi.ServiceLoader;
@@ -69,7 +70,7 @@ public class EmulatorTestCase extends AbstractTestTestBase {
     public void setMocks() {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidExtensionConfigurator.ANDROID_EXTENSION_NAME).property("force", "false")
-                .property("verbose", "true").property("avdName", "foobar-test-device").property("apiLevel", "10")
+                .property("avdName", "foobar-test-device").property("apiLevel", "10")
                 .property("emulatorBootupTimeoutInSeconds", "180")
                 .property("emulatorOptions", "-no-window");
 
@@ -111,6 +112,7 @@ public class EmulatorTestCase extends AbstractTestTestBase {
 
         assertEventFired(AndroidBridgeInitialized.class, 1);
         assertEventFired(AndroidDeviceReady.class, 1);
+        assertEventFired(AndroidDeviceShutdown.class, 1);
     }
 
     static class DummyClass {

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -26,86 +26,185 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.jboss.arquillian.android.configuration.AndroidExtensionConfiguration;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * An utility which encapsules external process execution
+ * Executor service which is able to execute external process as well as callables
  *
- * @author <a href="kpiwko@redhat.com">Karel Piwko</a>
+ * @author <a href="mailto:kpiwko@redhat.com">Karel Piwko</a>
  *
  */
-class ProcessExecutor {
+public class ProcessExecutor {
 
-    private Map<Process, Thread> shutdownThreads;
-    private AndroidExtensionConfiguration configuration;
+    private final ShutDownThreadHolder shutdownThreads;
+    private final ExecutorService service;
+    private final ScheduledExecutorService scheduledService;
 
-    public ProcessExecutor(AndroidExtensionConfiguration configuration) {
-        this.configuration = configuration;
-        this.shutdownThreads = new HashMap<Process, Thread>();
+    public ProcessExecutor() {
+        this.shutdownThreads = new ShutDownThreadHolder();
+        this.service = Executors.newCachedThreadPool();
+        this.scheduledService = Executors.newScheduledThreadPool(1);
     }
 
-    public Process spawn(String... command) throws IOException {
-        ProcessBuilder builder = new ProcessBuilder(sanitizeArguments(command));
-        final Process p = builder.start();
-        AndroidConsoleConsumer consumer = new AndroidConsoleConsumer(p, configuration);
-        new Thread(consumer).start();
-        Thread shutdownThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (p != null) {
-                    p.destroy();
-                    try {
-                        p.waitFor();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+    /**
+     * Submit callable to be executed
+     *
+     * @param callable to be executed
+     * @return future
+     */
+    public <T> Future<T> submit(Callable<T> callable) {
+        return service.submit(callable);
+    }
+
+    /**
+     * Schedules a callable to be executed in regular intervals
+     *
+     * @param callable Callable
+     * @param timeout Total timeout
+     * @param step delay before next execution
+     * @param unit time unit
+     * @return {@code true} if executed successfully, false otherwise
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public Boolean scheduleUntilTrue(Callable<Boolean> callable, long timeout, long step, TimeUnit unit)
+            throws InterruptedException, ExecutionException {
+
+        for (int i = 0; i < timeout / step; i++) {
+            ScheduledFuture<Boolean> future = scheduledService.schedule(callable, i * step, unit);
+            Boolean result = false;
+            try {
+                result = future.get(timeout - i * step, unit);
+                if (result == true) {
+                    return true;
                 }
+            } catch (TimeoutException e) {
+                return false;
             }
-        });
-        Runtime.getRuntime().addShutdownHook(shutdownThread);
-        shutdownThreads.put(p, shutdownThread);
-
-        return p;
-    }
-
-    public List<String> execute(Map<String, String> input, String... command) throws IOException {
-        ProcessBuilder builder = new ProcessBuilder(sanitizeArguments(command));
-        builder.redirectErrorStream(true);
-        final Process p = builder.start();
-
-        AndroidConsoleConsumer consumer = new AndroidConsoleConsumer(p, configuration, input);
-        Thread consumerThread = new Thread(consumer);
-        consumerThread.start();
-
-        try {
-            p.waitFor();
-            consumerThread.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
 
-        return consumer.getOutputList();
+        return false;
     }
 
-    public List<String> execute(String... command) throws IOException {
+    /**
+     * Spawns a process defined by command. Process output is discarded.
+     *
+     * @param command the command to be executed
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public Process spawn(List<String> command) throws InterruptedException, ExecutionException {
+        return spawn(command.toArray(new String[0]));
+    }
+
+    /**
+     * Spawns a process defined by command. Process output is discarded
+     *
+     * @param command the command to be executed
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public Process spawn(String... command) throws InterruptedException, ExecutionException {
+        Future<Process> processFuture = service.submit(new SpawnedProcess(command));
+        Process process = processFuture.get();
+        service.submit(new ProcessOutputConsumer(new ProcessWithId(process, command[0])));
+        shutdownThreads.addHookFor(process);
+
+        return process;
+    }
+
+    public List<String> execute(Map<String, String> input, String... command) throws InterruptedException, ExecutionException {
+        Future<Process> processFuture = service.submit(new SpawnedProcess(true, command));
+        Process process = processFuture.get();
+        return service.submit(new ProcessOutputConsumer(new ProcessWithId(process, command[0]), input)).get();
+    }
+
+    public List<String> execute(String... command) throws InterruptedException, ExecutionException {
         return execute(Collections.<String, String> emptyMap(), command);
     }
 
     public ProcessExecutor removeShutdownHook(Process p) {
-        shutdownThreads.remove(p);
+        shutdownThreads.removeHookFor(p);
         return this;
     }
 
-    private List<String> sanitizeArguments(String... command) {
-        List<String> cmd = new ArrayList<String>(command.length);
-        for (String c : command) {
-            if (c != null && c.length() > 0) {
-                cmd.add(c);
-            }
+    private static class ShutDownThreadHolder {
+
+        private final Map<Process, Thread> shutdownThreads;
+
+        public ShutDownThreadHolder() {
+            this.shutdownThreads = Collections.synchronizedMap(new HashMap<Process, Thread>());
         }
 
-        return cmd;
+        public void addHookFor(final Process p) {
+            Thread shutdownThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (p != null) {
+                        p.destroy();
+                        try {
+                            p.waitFor();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
+            Runtime.getRuntime().addShutdownHook(shutdownThread);
+            shutdownThreads.put(p, shutdownThread);
+        }
+
+        public void removeHookFor(final Process p) {
+            shutdownThreads.remove(p);
+        }
+    }
+
+    private static class InputSanitizer {
+        public static List<String> sanitizeArguments(String... command) {
+            List<String> cmd = new ArrayList<String>(command.length);
+            for (String c : command) {
+                if (c != null && c.length() > 0) {
+                    cmd.add(c);
+                }
+            }
+
+            return cmd;
+        }
+    }
+
+    private static class SpawnedProcess implements Callable<Process> {
+
+        private final String[] command;
+        private boolean redirectErrorStream;
+
+        public SpawnedProcess(String... command) {
+            this(false, command);
+        }
+
+        public SpawnedProcess(boolean redirectErrorStream, String... command) {
+            this.redirectErrorStream = redirectErrorStream;
+            this.command = command;
+        }
+
+        @Override
+        public Process call() throws Exception {
+            ProcessBuilder builder = new ProcessBuilder(InputSanitizer.sanitizeArguments(command));
+            builder.redirectErrorStream(redirectErrorStream);
+            return builder.start();
+        }
+
     }
 
     /**
@@ -114,33 +213,28 @@ class ProcessExecutor {
      * @author Stuart Douglas
      * @author Karel Piwko
      */
-    private static class AndroidConsoleConsumer implements Runnable {
+    private static class ProcessOutputConsumer implements Callable<List<String>> {
 
+        private static final Logger log = Logger.getLogger(ProcessOutputConsumer.class.getName());
         private static final String NL = System.getProperty("line.separator");
 
         private final Process process;
+        private final Map<String, String> inputOutputMap;
 
-        private final AndroidExtensionConfiguration configuration;
-
-        private final List<String> outputList;
-        private final Map<String, String> input;
-
-        public AndroidConsoleConsumer(Process process, AndroidExtensionConfiguration configuration, Map<String, String> input) {
+        public ProcessOutputConsumer(ProcessWithId process, Map<String, String> inputOutputMap) {
             this.process = process;
-            this.configuration = configuration;
-            this.outputList = new ArrayList<String>();
-            this.input = input;
+            this.inputOutputMap = inputOutputMap;
         }
 
-        public AndroidConsoleConsumer(Process process, AndroidExtensionConfiguration configuration) {
-            this(process, configuration, Collections.<String, String> emptyMap());
+        public ProcessOutputConsumer(ProcessWithId process) {
+            this(process, Collections.<String, String> emptyMap());
         }
 
         @Override
-        public void run() {
+        public List<String> call() throws Exception {
             final InputStream stream = process.getInputStream();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            final boolean writeOutput = configuration.isVerbose();
+            final List<String> output = new ArrayList<String>();
 
             try {
 
@@ -152,34 +246,93 @@ class ProcessExecutor {
 
                     // add the character
                     line.append(c);
-                    if (writeOutput) {
-                        System.out.print(c);
-                        System.out.flush();
-                    }
 
                     // check if we are have to respond with an input
                     String key = line.toString();
-                    if (input.containsKey(key)) {
+                    if (inputOutputMap.containsKey(key)) {
+
+                        if (log.isLoggable(Level.FINEST)) {
+                            log.log(Level.FINEST, "{0} outputs: {1}, responded with: ", new Object[] { process,
+                                    line.toString(), inputOutputMap.get(key) });
+                        }
                         OutputStream ostream = process.getOutputStream();
-                        ostream.write(input.get(key).getBytes());
+                        ostream.write(inputOutputMap.get(key).getBytes());
                         ostream.flush();
+
                     }
 
                     // save output
                     if (line.indexOf(NL) != -1) {
-                        outputList.add(line.toString());
+                        if (log.isLoggable(Level.FINEST)) {
+                            log.log(Level.FINEST, "{0} outputs: {1}", new Object[] { process, line.toString() });
+                        }
+                        output.add(line.toString());
                         line = new StringBuilder();
                     }
                 }
                 if (line.length() > 1) {
-                    outputList.add(line.toString());
+                    output.add(line.toString());
+                    if (log.isLoggable(Level.FINEST)) {
+                        log.log(Level.FINEST, "{0} outputs: {1}", new Object[] { process, line.toString() });
+                    }
+
                 }
             } catch (IOException e) {
             }
+
+            return output;
+        }
+    }
+
+    /**
+     * Represents a proccess with id
+     *
+     * @author <a href="mailto:kpiwko@redhat.com">Karel Piwko</a>
+     *
+     */
+    private class ProcessWithId extends Process {
+
+        private final Process process;
+        private final String id;
+
+        public ProcessWithId(Process process, String id) {
+            this.id = id;
+            this.process = process;
         }
 
-        public List<String> getOutputList() {
-            return outputList;
+        @Override
+        public OutputStream getOutputStream() {
+            return process.getOutputStream();
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            return process.getInputStream();
+        }
+
+        @Override
+        public InputStream getErrorStream() {
+            return process.getErrorStream();
+        }
+
+        @Override
+        public int waitFor() throws InterruptedException {
+            return process.waitFor();
+        }
+
+        @Override
+        public int exitValue() {
+            return process.exitValue();
+        }
+
+        @Override
+        public void destroy() {
+            process.destroy();
+        }
+
+        @Override
+        public String toString() {
+            return "Process: " + id;
         }
 
     }

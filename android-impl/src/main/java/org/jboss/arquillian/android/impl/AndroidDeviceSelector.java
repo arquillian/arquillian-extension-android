@@ -16,11 +16,11 @@
  */
 package org.jboss.arquillian.android.impl;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import org.jboss.arquillian.android.api.AndroidBridge;
 import org.jboss.arquillian.android.api.AndroidDevice;
+import org.jboss.arquillian.android.api.AndroidExecutionException;
 import org.jboss.arquillian.android.configuration.AndroidConfigurationException;
 import org.jboss.arquillian.android.configuration.AndroidExtensionConfiguration;
 import org.jboss.arquillian.android.configuration.AndroidSdk;
@@ -83,7 +84,8 @@ public class AndroidDeviceSelector {
 
     @SuppressWarnings("serial")
     public void getOrCreateAndroidDevice(@Observes AndroidBridgeInitialized event, ProcessExecutor executor,
-            AndroidExtensionConfiguration configuration, AndroidSdk sdk) throws AndroidConfigurationException, IOException {
+            AndroidExtensionConfiguration configuration, AndroidSdk sdk) throws AndroidConfigurationException,
+            AndroidExecutionException {
 
         String avdName = configuration.getAvdName();
         String serialId = configuration.getSerialId();
@@ -107,12 +109,18 @@ public class AndroidDeviceSelector {
 
             Validate.notNullOrEmpty(configuration.getSdSize(), "Memory SD card size must be defined");
 
-            executor.execute(new HashMap<String, String>() {
-                {
-                    put("Do you wish to create a custom hardware profile [no]", "no\n");
-                }
-            }, sdk.getAndroidPath(), "create", "avd", "-n", avdName, "-t", "android-" + configuration.getApiLevel(), "-f",
-                    "-p", avdName, "-c", configuration.getSdSize());
+            try {
+                executor.execute(new HashMap<String, String>() {
+                    {
+                        put("Do you wish to create a custom hardware profile [no]", "no\n");
+                    }
+                }, sdk.getAndroidPath(), "create", "avd", "-n", avdName, "-t", "android-" + configuration.getApiLevel(), "-f",
+                        "-p", avdName, "-c", configuration.getSdSize());
+            } catch (InterruptedException e) {
+                throw new AndroidExecutionException("Unable to create a new AVD Device", e);
+            } catch (ExecutionException e) {
+                throw new AndroidExecutionException("Unable to create a new AVD Device", e);
+            }
 
             log.info("Android virtual device " + avdName + " was created");
             avdCreated.fire(new AndroidVirtualDeviceCreated(avdName));
@@ -144,14 +152,20 @@ public class AndroidDeviceSelector {
 
     }
 
-    private Set<String> getAvdDeviceNames(ProcessExecutor executor, AndroidSdk sdk) throws IOException {
+    private Set<String> getAvdDeviceNames(ProcessExecutor executor, AndroidSdk sdk) throws AndroidExecutionException {
 
         final Pattern deviceName = Pattern.compile("[\\s]*Name: ([^\\s]+)[\\s]*");
 
         Set<String> names = new HashSet<String>();
 
-        List<String> output = executor.execute(sdk.getAndroidPath(), "list", "avd");
-
+        List<String> output;
+        try {
+            output = executor.execute(sdk.getAndroidPath(), "list", "avd");
+        } catch (InterruptedException e) {
+            throw new AndroidExecutionException("Unable to get list of available AVDs", e);
+        } catch (ExecutionException e) {
+            throw new AndroidExecutionException("Unable to get list of available AVDs", e);
+        }
         for (String line : output) {
             Matcher m;
             if (line.trim().startsWith("Name: ") && (m = deviceName.matcher(line)).matches()) {

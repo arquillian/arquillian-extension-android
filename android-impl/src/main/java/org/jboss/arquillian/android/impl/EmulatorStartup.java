@@ -16,11 +16,15 @@
  */
 package org.jboss.arquillian.android.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.android.api.AndroidBridge;
@@ -64,7 +68,6 @@ import com.android.ddmlib.IDevice;
  */
 public class EmulatorStartup {
     private static final Logger log = Logger.getLogger(EmulatorStartup.class.getName());
-
     @Inject
     @SuiteScoped
     private InstanceProducer<AndroidEmulator> androidEmulator;
@@ -78,7 +81,7 @@ public class EmulatorStartup {
 
     public void createAndroidVirtualDeviceAvailable(@Observes AndroidVirtualDeviceEvent event, AndroidBridge bridge,
             AndroidExtensionConfiguration configuration, AndroidSdk sdk, ProcessExecutor executor)
-            throws AndroidExecutionException, IOException {
+            throws AndroidExecutionException {
 
         if (!bridge.isConnected()) {
             throw new IllegalStateException("Android debug bridge must be connected in order to spawn emulator");
@@ -96,20 +99,21 @@ public class EmulatorStartup {
 
         if (running == null) {
 
-            log.info("Starting avd named: " + name);
+            CountDownWatch countdown = new CountDownWatch(configuration.getEmulatorBootupTimeoutInSeconds(), TimeUnit.SECONDS);
+            log.log(Level.INFO, "Waiting {0} seconds for emulator {1} to be started and connected.", new Object[] {
+                    countdown.timeout(), name });
 
             // discover what device was added here
-            DeviceDiscovery deviceDiscovery = new DeviceDiscovery();
+            DeviceConnectDiscovery deviceDiscovery = new DeviceConnectDiscovery();
             AndroidDebugBridge.addDeviceChangeListener(deviceDiscovery);
 
-            // construct emulator command
-            List<String> emulatorCommand = new ArrayList<String>(Arrays.asList(sdk.getEmulatorPath(), "-avd", name));
-            emulatorCommand = getEmulatorOptions(emulatorCommand, configuration.getEmulatorOptions());
-            // execute emulator
-            Process emulator = executor.spawn(emulatorCommand.toArray(new String[0]));
+            Process emulator = startEmulator(executor, sdk, name, configuration.getEmulatorOptions());
             androidEmulator.set(new AndroidEmulator(emulator));
 
-            waitUntilBootUpIsComplete(deviceDiscovery, executor, sdk, configuration.getEmulatorBootupTimeoutInSeconds());
+            log.log(Level.FINE, "Emulator process started, {0} seconds remaining to start the device {1}", new Object[] {
+                    countdown.timeLeft(), name });
+
+            waitUntilBootUpIsComplete(deviceDiscovery, executor, sdk, countdown);
             running = deviceDiscovery.getDiscoveredDevice();
 
             AndroidDebugBridge.removeDeviceChangeListener(deviceDiscovery);
@@ -124,59 +128,75 @@ public class EmulatorStartup {
         androidDeviceReady.fire(new AndroidDeviceReady(running));
     }
 
-    private void waitUntilBootUpIsComplete(DeviceDiscovery deviceDiscovery, ProcessExecutor executor, AndroidSdk sdk,
-            long timeout) throws AndroidExecutionException, IOException {
+    private Process startEmulator(ProcessExecutor executor, AndroidSdk sdk, String name, String emulatorOptions)
+            throws AndroidExecutionException {
 
-        log.info("Waiting " + timeout + " seconds until the device is connected");
+        // construct emulator command
+        List<String> emulatorCommand = new ArrayList<String>(Arrays.asList(sdk.getEmulatorPath(), "-avd", name));
+        emulatorCommand = getEmulatorOptions(emulatorCommand, emulatorOptions);
+        // execute emulator
+        try {
+            return executor.spawn(emulatorCommand);
+        } catch (InterruptedException e) {
+            throw new AndroidExecutionException(e, "Unable to start emulator for {0} with options {1}", name, emulatorOptions);
+        } catch (ExecutionException e) {
+            throw new AndroidExecutionException(e, "Unable to start emulator for {0} with options {1}", name, emulatorOptions);
+        }
 
-        // wait until the device is connected to ADB
-        long timeLeft = timeout * 1000;
-        while (true) {
-            long started = System.currentTimeMillis();
-            if (deviceDiscovery.isOnline()) {
-                break;
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            timeLeft -= System.currentTimeMillis() - started;
-            if (timeLeft <= 0) {
+    }
+
+    private void waitUntilBootUpIsComplete(final DeviceConnectDiscovery deviceDiscovery, final ProcessExecutor executor,
+            final AndroidSdk sdk,
+            final CountDownWatch countdown) throws AndroidExecutionException {
+
+        try {
+            boolean isOnline = executor.scheduleUntilTrue(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return deviceDiscovery.isOnline();
+                }
+            }, countdown.timeLeft(), countdown.getTimeUnit().convert(1, TimeUnit.SECONDS), countdown.getTimeUnit());
+
+            if (isOnline == false) {
                 throw new IllegalStateException(
                         "No emulator device was brough online during "
-                                + timeout
+                                + countdown.timeout()
                                 + " seconds to Android Debug Bridge. Please increase the time limit in order to get emulator connected.");
             }
-        }
-        // device is connected to ADB
-        AndroidDevice connectedDevice = deviceDiscovery.getDiscoveredDevice();
-        // wait until the device is started completely
-        while (true) {
-            long started = System.currentTimeMillis();
-            // if (connectedDevice.getProperty("ro.runtime.firstboot") != null) {
-            // return;
-            // }
 
-            List<String> props = executor
-                    .execute(sdk.getAdbPath(), "-s", connectedDevice.getSerialNumber(), "shell", "getprop");
-            for (String line : props) {
-                if (line.contains("[ro.runtime.firstboot]")) { // boot is completed
-                    log.info("Device boot completed after " + (timeout * 1000 - timeLeft) + " milliseconds");
-                    return;
+            // device is connected to ADB
+            final AndroidDevice connectedDevice = deviceDiscovery.getDiscoveredDevice();
+            isOnline = executor.scheduleUntilTrue(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    // check properties of underlying process
+                    List<String> props = executor.execute(Collections.<String, String> emptyMap(), sdk.getAdbPath(),
+                            "-s",
+                            connectedDevice.getSerialNumber(),
+                            "shell", "getprop");
+                    for (String line : props) {
+                        if (line.contains("[ro.runtime.firstboot]")) {
+                            // boot is completed
+                            return true;
+                        }
+                    }
+                    return false;
                 }
+            }, countdown.timeLeft(), countdown.getTimeUnit().convert(1, TimeUnit.SECONDS), countdown.getTimeUnit());
+
+            if (log.isLoggable(Level.INFO)) {
+                log.log(Level.INFO, "Android emulator {0} was started within {1} seconds",
+                        new Object[] { connectedDevice.getAvdName(), countdown.timeElapsed() });
             }
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            timeLeft -= System.currentTimeMillis() - started;
-            if (timeLeft <= 0) {
-                throw new IllegalStateException("Emulator device hasn't started properly in " + timeout
+            if (isOnline == false) {
+                throw new AndroidExecutionException("Emulator device hasn't started properly in " + countdown.timeout()
                         + " seconds. Please increase the time limit in order to get emulator booted.");
             }
+        } catch (InterruptedException e) {
+            throw new AndroidExecutionException(e, "Emulator device startup failed.");
+        } catch (ExecutionException e) {
+            throw new AndroidExecutionException(e, "Emulator device startup failed.");
         }
     }
 
@@ -207,7 +227,7 @@ public class EmulatorStartup {
         return current.equals(other);
     }
 
-    private class DeviceDiscovery implements IDeviceChangeListener {
+    private class DeviceConnectDiscovery implements IDeviceChangeListener {
 
         private IDevice discoveredDevice;
 
@@ -225,7 +245,7 @@ public class EmulatorStartup {
         @Override
         public void deviceConnected(IDevice device) {
             this.discoveredDevice = device;
-            log.fine("Discovered an emulator device connected to ADB bus");
+            log.log(Level.FINE, "Discovered an emulator device id={0} connected to ADB bus", device.getSerialNumber());
         }
 
         @Override

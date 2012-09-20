@@ -89,8 +89,8 @@ class AndroidDeviceImpl implements AndroidDevice {
     }
 
     @Override
-    public void executeShellCommand(String command, AndroidDeviceOutputReciever reciever) throws AndroidExecutionException,
-            IOException {
+    public void executeShellCommand(String command, AndroidDeviceOutputReciever reciever) throws AndroidExecutionException
+    {
 
         try {
             delegate.executeShellCommand(command, new AndroidRecieverDelegate(reciever));
@@ -100,12 +100,14 @@ class AndroidDeviceImpl implements AndroidDevice {
             throw new AndroidExecutionException("Unable to execute command '" + command + "', command was rejected", e);
         } catch (ShellCommandUnresponsiveException e) {
             throw new AndroidExecutionException("Unable to execute command '" + command + "', shell is not responsive", e);
+        } catch (IOException e) {
+            throw new AndroidExecutionException("Unable to execute command '" + command + "'", e);
         }
 
     }
 
     @Override
-    public void createForward(int localPort, int remotePort) throws AndroidExecutionException, IOException {
+    public void createForward(int localPort, int remotePort) throws AndroidExecutionException {
         try {
             delegate.createForward(localPort, remotePort);
         } catch (TimeoutException e) {
@@ -114,11 +116,14 @@ class AndroidDeviceImpl implements AndroidDevice {
         } catch (AdbCommandRejectedException e) {
             throw new AndroidExecutionException("Unable to forward port (" + localPort + " to " + remotePort
                     + "), command was rejected", e);
+        } catch (IOException e) {
+            throw new AndroidExecutionException("Unable to forward port (" + localPort + " to " + remotePort
+                    + ").", e);
         }
     }
 
     @Override
-    public void removeForward(int localPort, int remotePort) throws AndroidExecutionException, IOException {
+    public void removeForward(int localPort, int remotePort) throws AndroidExecutionException {
         try {
             delegate.removeForward(localPort, remotePort);
         } catch (TimeoutException e) {
@@ -127,6 +132,9 @@ class AndroidDeviceImpl implements AndroidDevice {
         } catch (AdbCommandRejectedException e) {
             throw new AndroidExecutionException("Unable to remove port forwarding (" + localPort + " to " + remotePort
                     + "), command was rejected", e);
+        } catch (IOException e) {
+            throw new AndroidExecutionException("Unable to remove port forwarding (" + localPort + " to " + remotePort
+                    + ").", e);
         }
     }
 
@@ -165,11 +173,6 @@ class AndroidDeviceImpl implements AndroidDevice {
 
         @Override
         public void processNewLines(String[] lines) {
-            if (delegate.isVerbose()) {
-                for (String line : lines) {
-                    System.out.println(line);
-                }
-            }
             delegate.processNewLines(lines);
         }
 

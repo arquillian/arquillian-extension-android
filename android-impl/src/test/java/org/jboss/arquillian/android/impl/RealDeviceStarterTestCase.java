@@ -31,6 +31,7 @@ import org.jboss.arquillian.test.spi.context.SuiteContext;
 import org.jboss.arquillian.test.spi.context.TestContext;
 import org.jboss.arquillian.test.spi.event.suite.After;
 import org.jboss.arquillian.test.spi.event.suite.AfterClass;
+import org.jboss.arquillian.test.spi.event.suite.AfterSuite;
 import org.jboss.arquillian.test.spi.event.suite.Before;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 import org.jboss.arquillian.test.spi.event.suite.BeforeSuite;
@@ -60,13 +61,14 @@ public class RealDeviceStarterTestCase extends AbstractTestTestBase {
         extensions.add(AndroidDeviceSelector.class);
         extensions.add(AndroidBridgeConnector.class);
         extensions.add(EmulatorStartup.class);
+        extensions.add(EmulatorShutdown.class);
     }
 
     @org.junit.Before
     public void setMocks() {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidExtensionConfigurator.ANDROID_EXTENSION_NAME).property("force", "false")
-                .property("verbose", "false").property("avdName", "foobar-test-device")
+                .property("avdName", "foobar-test-device")
                 .property("serialId", "0A3B89060A01600D")
                 .property("emulatorOptions", "-no-window");
 
@@ -77,6 +79,7 @@ public class RealDeviceStarterTestCase extends AbstractTestTestBase {
     @org.junit.After
     public void disposeMocks() throws AndroidExecutionException {
         AndroidBridge bridge = getManager().getContext(SuiteContext.class).getObjectStore().get(AndroidBridge.class);
+
         bridge.disconnect();
     }
 
@@ -103,6 +106,8 @@ public class RealDeviceStarterTestCase extends AbstractTestTestBase {
 
         assertEventFired(AndroidBridgeInitialized.class, 1);
         assertEventFired(AndroidDeviceReady.class, 1);
+
+        fire(new AfterSuite());
     }
 
     static class DummyClass {

@@ -27,7 +27,7 @@ where you extracted it. You should also update it via running `android` and navi
         </dependency>
 
     *Note: Make sure you have **NOT** Arquillian Drone Selenium Server on the classpath, as it will collide
-    unless configured to a different port. If you can remove it from classpath, you should disable it in `arquillian.xml`.
+    unless configured to a different port. If you cannot remove it from classpath, you should disable it in `arquillian.xml`.
 
         <extension qualifier="selenium-server">
             <!-- this must be skipped, we run /wd/hub on emulator -->
@@ -56,7 +56,6 @@ where you extracted it. You should also update it via running `android` and navi
             <!-- Nexus S -->
             <!-- <property name="serialId">3233E8EDB21700EC</property>-->
 
-            <property name="verbose">true</property>
             <property name="apiLevel">13</property>
             <property name="avdName">SnapshotEnabled</property>
             <property name="emulatorBootupTimeoutInSeconds">180</property>
@@ -68,8 +67,7 @@ where you extracted it. You should also update it via running `android` and navi
     - **avdName** - name of the Android Virtual Device. It will be either created or reused
     - apiLevel - (13) denotates API level, use `android list target` to get more variants
     - serialId - replaces avdName if set and availabel, represents a real device. Use `adb devics` to get the list
-    - skip - (false) skip execution
-    - verbose - (false) be verbose
+    - skip - (false) skip execution    
     - force - (false) force emulator recreationg
     - sdSize - (128M) SD card size for emulator 
     - emulatorBootupTimeoutInSeconds - (180) maximal time to get emulator started, use Snapshot enabled device if it takes too long
@@ -89,8 +87,39 @@ where you extracted it. You should also update it via running `android` and navi
 
     - **androidServerApk** - path to the Android Server APK you've downloaded
     - skip - (false) skip execution
-    - verbose - (false) be verbose
     - webdriverPortHost - (14444) port on Host connected with port on device
     - webdriverPortGuest - (8080) port on Guest connected with port on Host
+ 
+    
+Logging
+-------
+
+If you need to have more detailed logging, you have to provide logging.properties file as well as set it in Surefire plugin.
+Logging file can look like:
+
+	handlers= java.util.logging.ConsoleHandler
+
+	.level= FINEST
+
+	java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
+	java.util.logging.SimpleFormatter.format = %4$s: %5$s
+	java.util.logging.ConsoleHandler.level = FINEST
+    
+If you placed this file in `src/test/resources/logging.propreties`, Surefire execution will pick it up if following is defined:
+
+	<build>
+	    ...
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.config.file>${project.build.testOutputDirectory}/logging.properties</java.util.logging.config.file>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+        ...
+    </build>
 
 

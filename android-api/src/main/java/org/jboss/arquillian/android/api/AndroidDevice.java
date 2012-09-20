@@ -85,10 +85,8 @@ public interface AndroidDevice {
      * @param command The command to be executed
      * @param reciever A processor to process command output
      * @throws AndroidExecutionException
-     * @throws IOException
      */
-    public void executeShellCommand(String command, AndroidDeviceOutputReciever reciever) throws AndroidExecutionException,
-            IOException;
+    public void executeShellCommand(String command, AndroidDeviceOutputReciever reciever) throws AndroidExecutionException;
 
     /**
      * Creates a port forwarding between a local and a remote port.
@@ -96,7 +94,7 @@ public interface AndroidDevice {
      * @param localPort the local port to forward
      * @param remotePort the remote port.
      */
-    public void createForward(int localPort, int remotePort) throws AndroidExecutionException, IOException;
+    public void createForward(int localPort, int remotePort) throws AndroidExecutionException;
 
     /**
      * Removes a port forwarding between a local and a remote port.
@@ -104,7 +102,7 @@ public interface AndroidDevice {
      * @param localPort the local port to forward
      * @param remotePort the remote port.
      */
-    public void removeForward(int localPort, int remotePort) throws AndroidExecutionException, IOException;
+    public void removeForward(int localPort, int remotePort) throws AndroidExecutionException;
 
     /**
      * Installs an Android application on device. This is a helper method that combines the syncPackageToDevice,

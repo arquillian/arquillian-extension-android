@@ -63,7 +63,7 @@ public class AndroidBridgeConnectorTestCase extends AbstractTestTestBase {
     public void setMocks() {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class)
                 .extension(AndroidExtensionConfigurator.ANDROID_EXTENSION_NAME).property("force", "false")
-                .property("apiLevel", "10").property("verbose", "false").property("avdName", "foobar-test-device");
+                .property("apiLevel", "10").property("avdName", "foobar-test-device");
 
         bind(ApplicationScoped.class, ServiceLoader.class, serviceLoader);
         bind(ApplicationScoped.class, ArquillianDescriptor.class, desc);

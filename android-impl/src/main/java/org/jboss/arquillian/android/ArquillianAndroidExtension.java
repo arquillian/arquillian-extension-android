@@ -32,6 +32,7 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
 public class ArquillianAndroidExtension implements LoadableExtension {
 
     public void register(ExtensionBuilder builder) {
+
         builder.observer(AndroidExtensionConfigurator.class);
         builder.observer(AndroidDeviceSelector.class);
         builder.observer(AndroidBridgeConnector.class);

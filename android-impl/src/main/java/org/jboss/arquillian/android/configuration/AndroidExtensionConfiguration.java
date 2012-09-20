@@ -26,8 +26,6 @@ public class AndroidExtensionConfiguration {
 
     private boolean skip;
 
-    private boolean verbose;
-
     private boolean force;
 
     private String serialId;
@@ -39,6 +37,8 @@ public class AndroidExtensionConfiguration {
     private String sdSize = "128M";
 
     private long emulatorBootupTimeoutInSeconds = 120L;
+
+    private long emulatorShutdownTimeoutInSeconds = 60L;
 
     private String home = System.getenv("ANDROID_HOME");
 
@@ -85,14 +85,6 @@ public class AndroidExtensionConfiguration {
         this.skip = skip;
     }
 
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
     public boolean isForce() {
         return force;
     }
@@ -123,6 +115,14 @@ public class AndroidExtensionConfiguration {
 
     public void setSdSize(String sdSize) {
         this.sdSize = sdSize;
+    }
+
+    public long getEmulatorShutdownTimeoutInSeconds() {
+        return emulatorShutdownTimeoutInSeconds;
+    }
+
+    public void setEmulatorShutdownTimeoutInSeconds(long emulatorShutdownTimeoutInSeconds) {
+        this.emulatorShutdownTimeoutInSeconds = emulatorShutdownTimeoutInSeconds;
     }
 
 }

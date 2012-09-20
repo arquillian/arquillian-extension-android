@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.android.api.AndroidDevice;
@@ -65,7 +66,7 @@ public class AndroidWebDriverSupport {
         device.installPackage(configuration.getAndroidServerApk(), true);
 
         // start selenium server
-        WebDriverMonkey monkey = new WebDriverMonkey(configuration.getWebdriverLogFile(), configuration.isVerbose());
+        WebDriverMonkey monkey = new WebDriverMonkey(configuration.getWebdriverLogFile());
         device.executeShellCommand(START_WEBDRIVER_HUB_CMD, monkey);
 
         // check the process of selenium server is present
@@ -97,21 +98,21 @@ public class AndroidWebDriverSupport {
     }
 
     private static class WebDriverMonkey implements AndroidDeviceOutputReciever {
+        private static final Logger log = Logger.getLogger(WebDriverMonkey.class.getName());
 
-        private final boolean verbose;
         private final Writer output;
 
         private boolean started = false;
 
-        public WebDriverMonkey(File output, boolean verbose) throws IOException {
+        public WebDriverMonkey(File output) throws IOException {
             this.output = new FileWriter(output);
-            this.verbose = verbose;
         }
 
         @Override
         public void processNewLines(String[] lines) {
             for (String line : lines) {
                 try {
+                    log.log(Level.FINEST, "WebDriveMonkey outputs: ", line);
                     output.append(line).append("\n").flush();
                 } catch (IOException e) {
                     // ignore output
@@ -126,11 +127,6 @@ public class AndroidWebDriverSupport {
         @Override
         public boolean isCancelled() {
             return false;
-        }
-
-        @Override
-        public boolean isVerbose() {
-            return verbose;
         }
 
         public boolean isWebDriverHubStarted() {

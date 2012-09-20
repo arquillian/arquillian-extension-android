@@ -108,7 +108,7 @@ public class AndroidExtensionConfigurator {
             AndroidSdk sdk = new AndroidSdk(configuration);
             androidExtensionConfiguration.set(configuration);
             androidSdk.set(sdk);
-            executor.set(new ProcessExecutor(configuration));
+            executor.set(new ProcessExecutor());
             afterConfiguration.fire(new AndroidExtensionConfigured());
         }
     }

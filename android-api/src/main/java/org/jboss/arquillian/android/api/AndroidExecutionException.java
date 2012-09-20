@@ -16,6 +16,8 @@
  */
 package org.jboss.arquillian.android.api;
 
+import java.text.MessageFormat;
+
 /**
  * A generic error during execution on the Android device
  *
@@ -27,7 +29,7 @@ public class AndroidExecutionException extends Exception {
     /**
      *
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     public AndroidExecutionException(Throwable cause) {
         super(cause);
@@ -42,6 +44,14 @@ public class AndroidExecutionException extends Exception {
 
     public AndroidExecutionException(String msg, Throwable cause) {
         super(msg, cause);
+    }
+
+    public AndroidExecutionException(String msgFormat, Object... arguments) {
+        super(MessageFormat.format(msgFormat, arguments));
+    }
+
+    public AndroidExecutionException(Throwable cause, String msgFormat, Object... arguments) {
+        super(MessageFormat.format(msgFormat, arguments), cause);
     }
 
 }

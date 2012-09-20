@@ -65,7 +65,7 @@ public class AndroidWebDriverSupportEmulatorTestCase extends AbstractTestTestBas
     @org.junit.Before
     public void setMocks() {
         ArquillianDescriptor desc = Descriptors.create(ArquillianDescriptor.class).extension("android")
-                .property("force", "false").property("verbose", "true").property("avdName", "webdriver-emulator")
+                .property("force", "false").property("avdName", "webdriver-emulator")
                 .property("apiLevel", "9").property("emulatorBootupTimeoutInSeconds", "120").property("sdSize", "256M")
                 .extension(AndroidDroneConfigurator.ANDROID_DRONE_EXTENSION_NAME)
                 .property("androidServerApk", "android-server-2.6.0.apk");
