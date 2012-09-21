@@ -33,21 +33,21 @@ public interface AndroidDevice {
      *
      * @return Serial number
      */
-    public String getSerialNumber();
+    String getSerialNumber();
 
     /**
      * Returns name of Android Virtual Device
      *
      * @return Either a virtual device name or {@code null} if device is not an emulator
      */
-    public String getAvdName();
+    String getAvdName();
 
     /**
      * Returns a map of properties available for the device. These properties are cached.
      *
      * @return A properties map
      */
-    public Map<String, String> getProperties();
+    Map<String, String> getProperties();
 
     /**
      * Returns a value of property with given name
@@ -57,27 +57,35 @@ public interface AndroidDevice {
      * @throws IOException
      * @throws AndroidExecutionException
      */
-    public String getProperty(String name) throws IOException, AndroidExecutionException;
+    String getProperty(String name) throws IOException, AndroidExecutionException;
 
     /**
      * Checks if the device is online
      *
      * @return {@code true} if device is online, {@code false} otherwise
      */
-    public boolean isOnline();
+    boolean isOnline();
 
     /**
      * Checks if the device is an emulator
      *
      * @return {@code true} if device is an emulator, {@code false} otherwise
      */
-    public boolean isEmulator();
+    boolean isEmulator();
 
     /**
      * Returns if the device is offline
      *
      */
-    public boolean isOffline();
+    boolean isOffline();
+
+    /**
+     * Executes a shell command on the device. Silently discards command output.
+     *
+     * @param command The command to be executed
+     * @throws AndroidExecutionException
+     */
+    void executeShellCommand(String command) throws AndroidExecutionException;
 
     /**
      * Executes a shell command on the device
@@ -86,7 +94,7 @@ public interface AndroidDevice {
      * @param reciever A processor to process command output
      * @throws AndroidExecutionException
      */
-    public void executeShellCommand(String command, AndroidDeviceOutputReciever reciever) throws AndroidExecutionException;
+    void executeShellCommand(String command, AndroidDeviceOutputReciever reciever) throws AndroidExecutionException;
 
     /**
      * Creates a port forwarding between a local and a remote port.
@@ -94,7 +102,7 @@ public interface AndroidDevice {
      * @param localPort the local port to forward
      * @param remotePort the remote port.
      */
-    public void createForward(int localPort, int remotePort) throws AndroidExecutionException;
+    void createPortForwarding(int localPort, int remotePort) throws AndroidExecutionException;
 
     /**
      * Removes a port forwarding between a local and a remote port.
@@ -102,7 +110,7 @@ public interface AndroidDevice {
      * @param localPort the local port to forward
      * @param remotePort the remote port.
      */
-    public void removeForward(int localPort, int remotePort) throws AndroidExecutionException;
+    void removePortForwarding(int localPort, int remotePort) throws AndroidExecutionException;
 
     /**
      * Installs an Android application on device. This is a helper method that combines the syncPackageToDevice,
@@ -111,15 +119,14 @@ public interface AndroidDevice {
      * @param packageFilePath the absolute file system path to file on local host to install
      * @param reinstall set to <code>true</code> if re-install of app should be performed
      * @param extraArgs optional extra arguments to pass. See 'adb shell pm install --help' for available options.
-     * @return a {@link String} with an error code, or <code>null</code> if success.
      */
-    public void installPackage(File packageFilePath, boolean reinstall, String... extraArgs) throws AndroidExecutionException;
+    void installPackage(File packageFilePath, boolean reinstall, String... extraArgs) throws AndroidExecutionException;
 
     /**
      * Uninstalls an package from the device.
      *
      * @param packageName the Android application package name to uninstall
      */
-    public void uninstallPackage(String packageName) throws AndroidExecutionException;
+    void uninstallPackage(String packageName) throws AndroidExecutionException;
 
 }

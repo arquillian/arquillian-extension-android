@@ -89,8 +89,39 @@ where you extracted it. You should also update it via running `android` and navi
     - skip - (false) skip execution
     - webdriverPortHost - (14444) port on Host connected with port on device
     - webdriverPortGuest - (8080) port on Guest connected with port on Host
- 
-    
+
+Interacting with Android Device from a test
+-----------------------------------------
+
+You have the possibility to inject an instance of `AndroidDevice` into test using `@ArquillianResource` annotation.
+This is handy if you want for instance execute a shell command on the device or install an application, like in following:
+
+    @ArquillianResource AndroidDevice device;
+
+    @RunWith(Arquillian.class)
+    public class AndroidApkInstallationTestCase {
+
+        private final String INSTALLED_PACKAGES_CMD = "pm list packages";
+        private final String CALCULATOR_APP = "com.calculator";
+
+        @ArquillianResource
+        AndroidDevice device;
+
+        @Test
+        public void installAndUninstallApk() throws AndroidExecutionException {
+            device.installPackage(new File("src/test/apk/calculator.apk"), true);
+
+            List<String> installedApps = getInstalledPackages(device);
+
+            Assert.assertTrue("Calculator app was installed", installedApps.contains(CALCULATOR_APP));
+
+            device.uninstallPackage(CALCULATOR_APP);
+
+            installedApps = getInstalledPackages(device);
+            Assert.assertFalse("Calculator app was uninstalled", installedApps.contains(CALCULATOR_APP));
+        }
+    }
+
 Logging
 -------
 

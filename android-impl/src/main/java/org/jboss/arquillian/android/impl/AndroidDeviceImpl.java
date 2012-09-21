@@ -19,6 +19,8 @@ package org.jboss.arquillian.android.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jboss.arquillian.android.api.AndroidDevice;
 import org.jboss.arquillian.android.api.AndroidDeviceOutputReciever;
@@ -38,6 +40,8 @@ import com.android.ddmlib.TimeoutException;
  *
  */
 class AndroidDeviceImpl implements AndroidDevice {
+
+    private static final Logger log = Logger.getLogger(AndroidDeviceOutputReciever.class.getName());
 
     private IDevice delegate;
 
@@ -89,9 +93,29 @@ class AndroidDeviceImpl implements AndroidDevice {
     }
 
     @Override
+    public void executeShellCommand(String command) throws AndroidExecutionException {
+        final String commandString = command;
+        executeShellCommand(command, new AndroidDeviceOutputReciever() {
+            @Override
+            public void processNewLines(String[] lines) {
+                if (log.isLoggable(Level.FINEST)) {
+                    for (String line : lines) {
+                        log.log(Level.FINEST, "Shell command {0}: {1}", new Object[] { commandString, line });
+                    }
+                }
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+        });
+
+    }
+
+    @Override
     public void executeShellCommand(String command, AndroidDeviceOutputReciever reciever) throws AndroidExecutionException
     {
-
         try {
             delegate.executeShellCommand(command, new AndroidRecieverDelegate(reciever));
         } catch (TimeoutException e) {
@@ -107,7 +131,7 @@ class AndroidDeviceImpl implements AndroidDevice {
     }
 
     @Override
-    public void createForward(int localPort, int remotePort) throws AndroidExecutionException {
+    public void createPortForwarding(int localPort, int remotePort) throws AndroidExecutionException {
         try {
             delegate.createForward(localPort, remotePort);
         } catch (TimeoutException e) {
@@ -123,7 +147,7 @@ class AndroidDeviceImpl implements AndroidDevice {
     }
 
     @Override
-    public void removeForward(int localPort, int remotePort) throws AndroidExecutionException {
+    public void removePortForwarding(int localPort, int remotePort) throws AndroidExecutionException {
         try {
             delegate.removeForward(localPort, remotePort);
         } catch (TimeoutException e) {

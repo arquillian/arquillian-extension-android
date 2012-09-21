@@ -16,12 +16,14 @@
  */
 package org.jboss.arquillian.android;
 
+import org.jboss.arquillian.android.enricher.AndroidDeviceResourceProvider;
 import org.jboss.arquillian.android.impl.AndroidBridgeConnector;
 import org.jboss.arquillian.android.impl.AndroidDeviceSelector;
 import org.jboss.arquillian.android.impl.AndroidExtensionConfigurator;
 import org.jboss.arquillian.android.impl.EmulatorShutdown;
 import org.jboss.arquillian.android.impl.EmulatorStartup;
 import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
  * An extension for Android support in Arquillian
@@ -32,6 +34,8 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
 public class ArquillianAndroidExtension implements LoadableExtension {
 
     public void register(ExtensionBuilder builder) {
+
+        builder.service(ResourceProvider.class, AndroidDeviceResourceProvider.class);
 
         builder.observer(AndroidExtensionConfigurator.class);
         builder.observer(AndroidDeviceSelector.class);

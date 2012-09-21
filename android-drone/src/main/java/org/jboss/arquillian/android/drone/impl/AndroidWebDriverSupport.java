@@ -73,8 +73,9 @@ public class AndroidWebDriverSupport {
         waitUntilSeleniumStarted(device, monkey);
 
         // forward ports
-        log.info("Creating port forwaring for WebDriver support");
-        device.createForward(configuration.getWebdriverPortHost(), configuration.getWebdriverPortGuest());
+        log.log(Level.INFO, "Creating port forwaring from {0} to {1} for WebDriver support",
+                new Object[] { configuration.getWebdriverPortHost(), configuration.getWebdriverPortGuest() });
+        device.createPortForwarding(configuration.getWebdriverPortHost(), configuration.getWebdriverPortGuest());
 
         androidWebDriverHubRunning.fire(new AndroidWebDriverHubRunning());
     }

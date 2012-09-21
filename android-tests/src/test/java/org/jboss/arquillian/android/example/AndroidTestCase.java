@@ -34,6 +34,7 @@ public class AndroidTestCase {
 
     @Test
     public void testGoogle(@Drone AndroidDriver driver) throws Exception {
+
         // And now use this to visit Google
         driver.get("http://www.google.com");
 
