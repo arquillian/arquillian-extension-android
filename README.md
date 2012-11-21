@@ -35,7 +35,7 @@ where you extracted it. You should also update it via running `android` and navi
         </extension>
 
 2. Download Android Server APK to be installed to you mobile device from http://code.google.com/p/selenium/downloads/list
-   Use `android-server-2.6.0.apk` for devices including Android 2.3.4, latest version for Android 3.0 and newer. 
+   Use `android-server-2.6.0.apk` for devices including Android 2.3.4, latest version for Android 3.0 and newer.
 
 3. Set up WebDriver in arquillian.xml
 
@@ -48,7 +48,7 @@ where you extracted it. You should also update it via running `android` and navi
 
 4. Set up Android in arquillian.xml
 
-    You should be aware that following might change in the future. You've been warned! 
+    You should be aware that following might change in the future. You've been warned!
 
         <extension qualifier="android">
             <!-- this is optional, can be set via ANDROID_HOME property -->
@@ -60,28 +60,29 @@ where you extracted it. You should also update it via running `android` and navi
             <property name="avdName">SnapshotEnabled</property>
             <property name="emulatorBootupTimeoutInSeconds">180</property>
         </extension>
-    
+
     Properties explained, required in **bold**:
 
     - **home** - ANDROID_HOME, can be ommited if set via ANDROID_HOME property
     - **avdName** - name of the Android Virtual Device. It will be either created or reused
     - apiLevel - (13) denotates API level, use `android list target` to get more variants
     - serialId - replaces avdName if set and availabel, represents a real device. Use `adb devics` to get the list
-    - skip - (false) skip execution    
+    - skip - (false) skip execution
     - force - (false) force emulator recreationg
-    - sdSize - (128M) SD card size for emulator 
+    - sdSize - (128M) SD card size for emulator
     - emulatorBootupTimeoutInSeconds - (180) maximal time to get emulator started, use Snapshot enabled device if it takes too long
     - emulatorOptions - emulator options
+    - abi - specify ABI
 
     Emulators are created by default in `${basedir}/${avdName}`.
 
 5. Set up Android Drone in arquillian.xml
 
-    You should be aware that following might change in the future. You've been warned! 
-    
+    You should be aware that following might change in the future. You've been warned!
+
         <extension qualifier="android-drone">
             <property name="androidServerApk">android-server-2.16.apk</property>
-        </extension> 
+        </extension>
 
     Properties explained, required in **bold**:
 
@@ -135,7 +136,7 @@ Logging file can look like:
 	java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
 	java.util.logging.SimpleFormatter.format = %4$s: %5$s
 	java.util.logging.ConsoleHandler.level = FINEST
-    
+
 If you placed this file in `src/test/resources/logging.propreties`, Surefire execution will pick it up if following is defined:
 
 	<build>

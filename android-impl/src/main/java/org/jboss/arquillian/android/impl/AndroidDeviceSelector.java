@@ -16,6 +16,8 @@
  */
 package org.jboss.arquillian.android.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -110,12 +112,18 @@ public class AndroidDeviceSelector {
             Validate.notNullOrEmpty(configuration.getSdSize(), "Memory SD card size must be defined");
 
             try {
+                List<String> args = new ArrayList<String>(Arrays.asList(sdk.getAndroidPath(), "create", "avd", "-n", avdName, "-t", "android-" + configuration.getApiLevel(), "-f",
+                        "-p", avdName, "-c", configuration.getSdSize()));
+                if (configuration.getAbi() != null) {
+                    args.add("--abi");
+                    args.add(configuration.getAbi());
+                }
+                String[] argsArrays = new String[args.size()];
                 executor.execute(new HashMap<String, String>() {
                     {
                         put("Do you wish to create a custom hardware profile [no]", "no\n");
                     }
-                }, sdk.getAndroidPath(), "create", "avd", "-n", avdName, "-t", "android-" + configuration.getApiLevel(), "-f",
-                        "-p", avdName, "-c", configuration.getSdSize());
+                }, args.toArray(argsArrays));
             } catch (InterruptedException e) {
                 throw new AndroidExecutionException("Unable to create a new AVD Device", e);
             } catch (ExecutionException e) {
