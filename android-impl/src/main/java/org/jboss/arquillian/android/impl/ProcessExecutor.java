@@ -80,16 +80,20 @@ public class ProcessExecutor {
     public Boolean scheduleUntilTrue(Callable<Boolean> callable, long timeout, long step, TimeUnit unit)
             throws InterruptedException, ExecutionException {
 
-        for (int i = 0; i < timeout / step; i++) {
-            ScheduledFuture<Boolean> future = scheduledService.schedule(callable, i * step, unit);
+        CountDownWatch countdown = new CountDownWatch(timeout, unit);
+        while (countdown.timeLeft() > 0) {
+            // delay by step
+            ScheduledFuture<Boolean> future = scheduledService.schedule(callable, step, unit);
             Boolean result = false;
             try {
-                result = future.get(timeout - i * step, unit);
+                // wait for true up to timeLeft
+                // this means we might get less steps then timeout/step
+                result = future.get(countdown.timeLeft(), unit);
                 if (result == true) {
                     return true;
                 }
             } catch (TimeoutException e) {
-                return false;
+                continue;
             }
         }
 
@@ -99,6 +103,8 @@ public class ProcessExecutor {
     /**
      * Spawns a process defined by command. Process output is discarded.
      *
+     * @param timeout Total timeout
+     * @param unit Timeout unit
      * @param command the command to be executed
      * @return
      * @throws InterruptedException
@@ -117,7 +123,7 @@ public class ProcessExecutor {
      * @throws ExecutionException
      */
     public Process spawn(String... command) throws InterruptedException, ExecutionException {
-        Future<Process> processFuture = service.submit(new SpawnedProcess(command));
+        Future<Process> processFuture = service.submit(new SpawnedProcess(true, command));
         Process process = processFuture.get();
         service.submit(new ProcessOutputConsumer(new ProcessWithId(process, command[0])));
         shutdownThreads.addHookFor(process);
@@ -189,10 +195,6 @@ public class ProcessExecutor {
         private final String[] command;
         private boolean redirectErrorStream;
 
-        public SpawnedProcess(String... command) {
-            this(false, command);
-        }
-
         public SpawnedProcess(boolean redirectErrorStream, String... command) {
             this.redirectErrorStream = redirectErrorStream;
             this.command = command;
@@ -263,19 +265,26 @@ public class ProcessExecutor {
 
                     // save output
                     if (line.indexOf(NL) != -1) {
+                        String wholeLine = line.toString();
                         if (log.isLoggable(Level.FINEST)) {
-                            log.log(Level.FINEST, "{0} outputs: {1}", new Object[] { process, line.toString() });
+                            log.log(Level.FINEST, "{0} outputs: {1}", new Object[] { process, wholeLine });
                         }
-                        output.add(line.toString());
+                        else if (wholeLine.toLowerCase().startsWith("error")) {
+                            log.log(Level.SEVERE, "{0} outputs: {1}", new Object[] { process, wholeLine });
+                        }
+                        output.add(wholeLine);
                         line = new StringBuilder();
                     }
                 }
                 if (line.length() > 1) {
-                    output.add(line.toString());
+                    String wholeLine = line.toString();
                     if (log.isLoggable(Level.FINEST)) {
-                        log.log(Level.FINEST, "{0} outputs: {1}", new Object[] { process, line.toString() });
+                        log.log(Level.FINEST, "{0} outputs: {1}", new Object[] { process, wholeLine });
                     }
-
+                    else if (wholeLine.toLowerCase().startsWith("error")) {
+                        log.log(Level.SEVERE, "{0} outputs: {1}", new Object[] { process, wholeLine });
+                    }
+                    output.add(wholeLine);
                 }
             } catch (IOException e) {
             }
