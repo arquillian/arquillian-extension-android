@@ -36,6 +36,8 @@ public class AndroidExtensionConfiguration {
 
     private String sdSize = "128M";
 
+    private String abi;
+
     private long emulatorBootupTimeoutInSeconds = 120L;
 
     private long emulatorShutdownTimeoutInSeconds = 60L;
@@ -123,6 +125,14 @@ public class AndroidExtensionConfiguration {
 
     public void setEmulatorShutdownTimeoutInSeconds(long emulatorShutdownTimeoutInSeconds) {
         this.emulatorShutdownTimeoutInSeconds = emulatorShutdownTimeoutInSeconds;
+    }
+
+    public String getAbi() {
+        return abi;
+    }
+
+    public void setAbi(String abi) {
+        this.abi = abi;
     }
 
 }

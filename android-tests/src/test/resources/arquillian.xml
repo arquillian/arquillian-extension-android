@@ -30,15 +30,16 @@
 
         <property name="verbose">true</property>
 
-        <property name="apiLevel">13</property>
+        <property name="apiLevel">16</property>
         <property name="avdName">SnapshotEnabled</property>
         <property name="emulatorBootupTimeoutInSeconds">180</property>
+        <!--<property name="abi">x86</property>-->
 
     </extension>
 
     <extension qualifier="android-drone">
         <property name="verbose">true</property>
-        <property name="androidServerApk">android-server-2.16.apk</property>
+        <property name="androidServerApk">android-server-2.21.0.apk</property>
     </extension>
 
 </arquillian>
