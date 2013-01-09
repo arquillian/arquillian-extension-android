@@ -71,11 +71,11 @@ public class AndroidBridgeConnector {
     private Event<AndroidBridgeTerminated> adbTerminated;
 
     public void initAndroidDebugBridge(@Observes AndroidExtensionConfigured event, AndroidSdk sdk,
-            AndroidExtensionConfiguration configuration) throws AndroidExecutionException {
+            AndroidExtensionConfiguration configuration, ProcessExecutor executor) throws AndroidExecutionException {
 
         long start = System.currentTimeMillis();
         log.info("Initializing Android Debug Bridge");
-        AndroidBridge bridge = new AndroidBridgeImpl(new File(sdk.getAdbPath()), configuration.isForce());
+        AndroidBridge bridge = new AndroidBridgeImpl(new File(sdk.getAdbPath()), configuration.isForce(), executor);
         bridge.connect();
         long delta = System.currentTimeMillis() - start;
         log.info("Android debug Bridge was initialized in " + delta + "ms");

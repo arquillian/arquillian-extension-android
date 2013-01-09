@@ -16,6 +16,7 @@
  */
 package org.jboss.arquillian.android.impl;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.android.configuration.AndroidConfigurationException;
@@ -102,7 +103,9 @@ public class AndroidExtensionConfigurator {
                     "You must provide either \"avdName\" if you want to use an emulator, or \"serialId\" property if you want to use a real device.");
 
             if (configuration.getAvdName() != null && configuration.getSerialId() != null) {
-                log.warning("Both \"avdName\" and \"serialId\" properties are defined, the device specified by \"serialId\" will get priority if connected.");
+                log.log(Level.WARNING,
+                        "Both \"avdName\"({0}) and \"serialId\"({1}) properties are defined, the device specified by \"serialId\" will get priority if connected.",
+                        new Object[] { configuration.getAvdName(), configuration.getSerialId() });
             }
 
             AndroidSdk sdk = new AndroidSdk(configuration);

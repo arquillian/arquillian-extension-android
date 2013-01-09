@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A simple utility to measure time left from an timeout.
  *
- * Note that MICROSECONDS and MILLISECONDS are not supported as time units.
+ * Note that MICROSECONDS are not supported as time units for countdown watches implementation.
  *
  * @author <a href="mailto:kpiwko@redhat.com">Karel Piwko</a>
  *
@@ -42,8 +42,8 @@ public class CountDownWatch {
      */
     public CountDownWatch(long timeout, TimeUnit unit) {
 
-        if (EnumSet.of(TimeUnit.MICROSECONDS, TimeUnit.MILLISECONDS).contains(unit)) {
-            throw new IllegalArgumentException(MessageFormat.format("Time Unit {0} is not supported", unit));
+        if (EnumSet.of(TimeUnit.MICROSECONDS).contains(unit)) {
+            throw new IllegalArgumentException(MessageFormat.format("Time Unit {0} is not supported for CountDownWath", unit));
         }
 
         this.timeStart = System.currentTimeMillis();

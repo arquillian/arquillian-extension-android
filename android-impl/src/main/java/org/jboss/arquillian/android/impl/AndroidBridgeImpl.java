@@ -34,6 +34,10 @@ package org.jboss.arquillian.android.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.android.api.AndroidBridge;
@@ -58,14 +62,17 @@ class AndroidBridgeImpl implements AndroidBridge {
 
     private AndroidDebugBridge delegate;
 
-    private File adbLocation;
+    private final File adbLocation;
 
-    private boolean forceNewBridge;
+    private final boolean forceNewBridge;
 
-    AndroidBridgeImpl(File adbLocation, boolean forceNewBridge) {
+    private final ProcessExecutor executor;
+
+    AndroidBridgeImpl(final File adbLocation, final boolean forceNewBridge, final ProcessExecutor executor) {
         Validate.isReadable(adbLocation, "ADB location does not represent a readable file (" + adbLocation + ")");
         this.adbLocation = adbLocation;
         this.forceNewBridge = forceNewBridge;
+        this.executor = executor;
     }
 
     @Override
@@ -116,18 +123,20 @@ class AndroidBridgeImpl implements AndroidBridge {
      * @param adb
      */
     private void waitUntilConnected() {
-        int trials = 10;
-        while (trials > 0) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (isConnected()) {
-                break;
-            }
-            trials--;
+
+        try {
+            executor.scheduleUntilTrue(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return isConnected();
+                }
+            }, 500, 50, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            log.log(Level.WARNING, "Interupted while waiting for device to be connected", e);
+        } catch (ExecutionException e) {
+            log.log(Level.WARNING, "Failed while waiting for device to be connected", e);
         }
+
     }
 
     /**
@@ -136,20 +145,26 @@ class AndroidBridgeImpl implements AndroidBridge {
      * @param adb
      */
     private void waitForInitialDeviceList() {
+
         if (!delegate.hasInitialDeviceList()) {
-            log.fine("Waiting for initial device list from the Android Debug Bridge");
-            long limitTime = System.currentTimeMillis() + ADB_TIMEOUT_MS;
-            while (!delegate.hasInitialDeviceList() && (System.currentTimeMillis() < limitTime)) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException("Interrupted while waiting for initial device list from Android Debug Bridge");
-                }
-            }
-            if (!delegate.hasInitialDeviceList()) {
-                log.severe("Did not receive initial device list from the Android Debug Bridge.");
+            try {
+                executor.scheduleUntilTrue(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return delegate.hasInitialDeviceList();
+                    }
+                }, ADB_TIMEOUT_MS, 1000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Interrupted while waiting for initial device list from Android Debug Bridge");
+            } catch (ExecutionException e) {
+                throw new RuntimeException("Unable to get initial list of devices connected to Android Debug Bridge", e);
             }
         }
+
+        if (!delegate.hasInitialDeviceList()) {
+            log.severe("Did not receive initial device list from the Android Debug Bridge.");
+        }
+
     }
 
 }
