@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Parent -->
@@ -15,83 +16,27 @@
     <name>Arquillian Android Extension Test</name>
 
     <properties>
-        <version.selenium>2.16.0</version.selenium>
+        <version.org.jboss.arquillian.selenium>2.28.0</version.org.jboss.arquillian.selenium>
+        <version.org.jboss.jdf.boms>1.0.2.Final</version.org.jboss.jdf.boms>
     </properties>
 
     <dependencyManagement>
         <dependencies>
 
-            <!-- Selenium dependecies -->
+            <!-- Selenium BOM to override Selenium version to the newest available -->
             <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-api</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-java</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-support</artifactId>
-                <version>${version.selenium}</version>
+                <groupId>org.jboss.arquillian.selenium</groupId>
+                <artifactId>selenium-bom</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${version.org.jboss.arquillian.selenium}</version>
             </dependency>
 
-            <!-- Drivers -->
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-android-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-chrome-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-firefox-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-htmlunit-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-ie-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-iphone-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-remote-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-            <!-- JBoss distributes a complete set of Java EE 6 APIs including a Bill of Materials (BOM). A BOM specifies the versions
-                of a "stack" (or a collection) of artifacts. We use this here so that we always get the correct versions of artifacts.
-                Here we use
-                the jboss-javaee-6.0-with tools stack (you can read this as the JBoss stack of the Java EE 6 APIs, with some extras
-                tools for your
-                project, such as Arquillian for testing) -->
-            <!-- ARQ-792 -->
-            <!--
-                <dependency>
-                <groupId>org.jboss.arquillian.core</groupId>
-                <artifactId>arquillian-core-impl-base</artifactId>
-                <version>1.0.0.Final-SNAPSHOT</version>
-                </dependency>
-            -->
+            <!-- Using latest Arquillian stack - Core, Drone -->
             <dependency>
                 <groupId>org.jboss.bom</groupId>
                 <artifactId>jboss-javaee-6.0-with-tools</artifactId>
-                <version>1.0.0.M3</version>
+                <version>${version.org.jboss.jdf.boms}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -113,35 +58,8 @@
 
         <dependency>
             <groupId>org.jboss.arquillian.extension</groupId>
-            <artifactId>arquillian-drone-impl</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Support for WebDriver in Arquillian Drone -->
-        <dependency>
-            <groupId>org.jboss.arquillian.extension</groupId>
-            <artifactId>arquillian-drone-webdriver</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- ARQ-793 FIXME this should not be required!!! -->
-        <dependency>
-            <groupId>org.jboss.arquillian.config</groupId>
-            <artifactId>arquillian-config-impl-base</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Selenium -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Selenium Server dependency, feel free to use different slf4j implementation -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <artifactId>arquillian-drone-webdriver-depchain</artifactId>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
 
@@ -155,6 +73,22 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>verbose</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <java.util.logging.config.file>${project.build.testOutputDirectory}/logging.properties</java.util.logging.config.file>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>build-server</id>
             <build>

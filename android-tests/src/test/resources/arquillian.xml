@@ -26,15 +26,11 @@
         <!-- <property name="serialId">3233E8EDB21700EC</property> -->
         <!-- Xoom -->
         <property name="serialId">161c110144002197</property>
-
-
-        <property name="verbose">true</property>
-
         <property name="apiLevel">16</property>
         <property name="avdName">SnapshotEnabled</property>
         <property name="emulatorBootupTimeoutInSeconds">180</property>
-        <!--<property name="abi">x86</property>-->
-
+        <!-- adding ABI in case no device is connected -->
+        <property name="abi">armeabi-v7a</property>
     </extension>
 
     <extension qualifier="android-drone">
