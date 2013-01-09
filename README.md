@@ -7,6 +7,8 @@ Extensions currently supports:
 * Creating new Android Virtual Devices
 * Reusing already existing Android Virtual Devices
 * Connecting to real devices
+* Injecting Android Device handler into test
+* Using Arquillian Drone to control your test
 
 Usage
 -----
@@ -21,12 +23,12 @@ where you extracted it. You should also update it via running `android` and navi
         <dependency>
             <groupId>org.jboss.arquillian.extension</groupId>
             <artifactId>arquillian-android-depchain</artifactId>
-            <version>1.0.0.Alpha1-SNAPSHOT</version>
+            <version>1.0.0.Final-SNAPSHOT</version>
             <type>pom</type>
             <scope>test</scope>
         </dependency>
 
-    *Note: Make sure you have **NOT** Arquillian Drone Selenium Server on the classpath, as it will collide
+    *Note: Make sure you have **NOT** Arquillian Drone Selenium Server on the classpath, as it will collide with Android
     unless configured to a different port. If you cannot remove it from classpath, you should disable it in `arquillian.xml`.
 
         <extension qualifier="selenium-server">
@@ -81,7 +83,7 @@ where you extracted it. You should also update it via running `android` and navi
     You should be aware that following might change in the future. You've been warned!
 
         <extension qualifier="android-drone">
-            <property name="androidServerApk">android-server-2.16.apk</property>
+            <property name="androidServerApk">android-server-2.21.0.apk</property>
         </extension>
 
     Properties explained, required in **bold**:
