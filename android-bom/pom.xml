@@ -7,7 +7,7 @@
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.extension</groupId>
     <artifactId>arquillian-android-bom</artifactId>
-    <version>1.0.0.Alpha2</version>
+    <version>1.0.0.Final-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Arquillian Android Extension Bill of Materials</name>
     <description>Centralized dependencyManagement for the Arquillian Android Extension</description>

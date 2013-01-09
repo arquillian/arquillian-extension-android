@@ -15,7 +15,7 @@
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.extension</groupId>
     <artifactId>arquillian-android-parent</artifactId>
-    <version>1.0.0.Alpha2</version>
+    <version>1.0.0.Final-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Arquillian Android Extension Parent</name>
 
